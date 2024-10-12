@@ -12,12 +12,23 @@ except ImportError:
     try:
         subprocess.check_call([sys.executable, "-m", "pip", "install", "pydub"])
         from pydub import AudioSegment
-
         print("pydub installed successfully.")
     except subprocess.CalledProcessError:
         print("Failed to install pydub. Please install it manually using 'pip install pydub'.")
         sys.exit(1)
 
+# Attempt to import tqdm, install if not available
+try:
+    from tqdm import tqdm
+except ImportError:
+    print("tqdm is not installed. Attempting to install it now...")
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "tqdm"])
+        from tqdm import tqdm
+        print("tqdm installed successfully.")
+    except subprocess.CalledProcessError:
+        print("Failed to install tqdm. Please install it manually using 'pip install tqdm'.")
+        sys.exit(1)
 
 def merge_voice_memos(directory, ffmpeg_path=None, log_file=None):
     # Set ffmpeg path if provided
@@ -35,7 +46,7 @@ def merge_voice_memos(directory, ffmpeg_path=None, log_file=None):
 
     # Verify ffmpeg is accessible
     try:
-        subprocess.check_output([AudioSegment.converter, "-version"])
+        subprocess.check_output([AudioSegment.converter, "-version"], stderr=subprocess.STDOUT)
     except Exception as e:
         error_message = (
             "FFmpeg not accessible. Please ensure FFmpeg is installed correctly and the path is accurate.\n"
@@ -59,7 +70,8 @@ def merge_voice_memos(directory, ffmpeg_path=None, log_file=None):
         sys.exit(1)
 
     merged_audio = AudioSegment.empty()
-    for file in files:
+    # Initialize tqdm progress bar
+    for file in tqdm(files, desc="Processing files", unit="file"):
         file_path = os.path.join(directory, file)
         try:
             # Attempt to convert .dat to audio. Adjust format if necessary.
@@ -97,7 +109,6 @@ def merge_voice_memos(directory, ffmpeg_path=None, log_file=None):
             with open(log_file, 'a') as log:
                 log.write(f"{datetime.now()} - ERROR - {error_export}\n")
         sys.exit(1)
-
 
 def main():
     import argparse
@@ -144,7 +155,6 @@ def main():
 
     with open(log_file, 'a') as log:
         log.write(f"=== MemoFusion Conversion Ended at {datetime.now()} ===\n")
-
 
 if __name__ == "__main__":
     main()
