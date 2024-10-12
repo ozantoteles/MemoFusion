@@ -95,9 +95,9 @@ No .dat Files Found:
 The script will notify you if no .dat files are found in the specified directory.
 Library Installation Issues:
 
-If pydub fails to install automatically, manually install it using:
+If pydub or tqdm fails to install automatically, manually install them using:
 ```bash
-pip install pydub
+pip install pydub tqdm
 ```
 
 ## Contributing
